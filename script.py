@@ -1,23 +1,17 @@
-from enum import nonmember
 
-
-#Compartment 1 - All the database and stored values being used in the whole project
-#Compartment 2 - Consists of the Menu and its working
-#Compartmenet 3 - Consists the code for the function "Add student" and all the different cases
-#Compartment 4 - Consists the code for the function "Enroll Course" and all the different cases
-#Compartment 5 - Consists the code for the function "Drop course" and all the different cases
-#/---------------------------------------------------------Compartment 1---------------------------------------------------------------------------------------------------------------------------\
-
+#/-----------------------------------Compartment 1------------------------------------------\
 
 courses = {"C101": "Mathematics", "C102" : "Programming", "C103": "History"}
 students={}
 stu_error = "Student ID does not exist!"
 cou_error = "Course does not exist!"
 
-# \----------------------------------------------------------------------------------------------------------------------------------------------------------/
+#\----------------------------------End of Compartment 1-----------------------------------/
 
+
+#/---------------------------------Compartment 2----------------------------------------------------\
 def std_id():
-    student_id = input("Enter Student ID: ")
+    student_id = input("Enter Student ID: ").upper()
     return student_id
 
 def cou_id():
@@ -25,12 +19,10 @@ def cou_id():
     return course_id
 
 
-#/---------------------------------------------------------Compartment 2---------------------------------------------------------------------------------------------------------------------------\
-
 def add_student(student_id, name):  # Defining a function to add student into the database
-    global students  # Edits the global dictionary of students
     if student_id in students:  # This if else block checks the database if it already has the same id or not, if it does it will not add the new data in the database and give error
         print("Record cannot be added the same student id already exists!")
+        return
     else:
         students[student_id] = {
             "name": name,
@@ -38,126 +30,145 @@ def add_student(student_id, name):  # Defining a function to add student into th
         }
         print("Successfully added")
 
-# \----------------------------------------------------------------------------------------------------------------------------------------------------------/
-
-
-#/---------------------------------------------------------Compartment 3---------------------------------------------------------------------------------------------------------------------------\
-
-def enroll_course(student_id, course):
-    if student_id not in students:
+def enroll_course(student_id, course):  # Function defined to enroll students into a specific course
+    if student_id not in students:   #Case check if student id exists or not
         print(stu_error)
+        return
 
-    elif course not in courses:
+    elif course not in courses:  #Case check if a valid course is input
         print(cou_error)
+        return
+
+    elif course in students[student_id]["courses"]:   # Case check whether the student is already enrolled in the course or not
+        print("Student already enrolled in this course!")
+        return
 
     else:
-        students[student_id]["courses"][course] = None
+        students[student_id]["courses"][course] = None  #Enrolls the student into the input course
         print("Successfully enrolled.")
-# \----------------------------------------------------------------------------------------------------------------------------------------/
 
 
-#/---------------------------------------------------------Compartment 4---------------------------------------------------------------------------------------------------------------------------\
 
-def drop_course(student_id, course):
-    global students
-    if student_id not in students:
+def drop_course(student_id, course):  # Function defining from dropping a student from a course
+    if student_id not in students:  #Case check for student id
         print(stu_error)
+        return
 
-    elif course not in courses:
+    elif course not in courses:  #Case check for course id
         print(cou_error)
-    elif course not in students[student_id]["courses"]:
+        return
+    elif course not in students[student_id]["courses"]:  # case check whether the student is enrolled in course or not
         print("Student is not enrolled in this course!")
+        return
     else:
-        students[student_id]["courses"].pop(course, None)
+        students[student_id]["courses"].pop(course, None)  # if all checks pass, removes the student from the course
         print("Successfully dropped.")
 
-# \------------------------------------------------------------------------------------------------------------------------------------------------------------/
+
+def view_courses():  #Function defined to view all the courses
+    print("\nAvailable Courses:")
+    for course_id, course_name in courses.items():
+        print(course_id, "-", course_name)
 
 
-#/---------------------------------------------------------Compartment 5---------------------------------------------------------------------------------------------------------------------------\
-
-def all_courses():
-    return print(courses)
-
-# \-----------------------------------------------------------------------------------------------------------------------------------------------------------/
-
-
-#/---------------------------------------------------------Compartment 6---------------------------------------------------------------------------------------------------------------------------\
-
-def record_grade(student_id, course, grade):
-    if student_id not in students:
+def record_grade(student_id, course, grade): #Function defined to record grades for a student for input course
+    if student_id not in students: # Checks student id exists or not
         print(stu_error)
-    elif course not in courses:
+        return
+    elif course not in courses: # Checks for course id
         print(cou_error)
-    elif course not in students[student_id]["courses"]:
+        return
+    elif course not in students[student_id]["courses"]:  # Checks whether the student is enrolled in the input course or not
         print("Student is not enrolled in this course!")
+        return
+    elif grade < 0 or grade > 100: # Check whether the grade is a valid number
+        print("Invalid grade!")
+        return
     else:
-        students[student_id]["courses"][course] = grade
+        students[student_id]["courses"][course] = grade  # Records grade
         print("Successfully recorded.")
 
- #\--------------------------------------------------------------------------------------------------------------------------------------------------------/
 
-
-#/---------------------------------------------------------Compartment 7--------------------------------------------------------------------------------------------------------------------------\
-
-def calculate_gpa(student_id):
-    student = students[student_id]
-    marks = 0
-    count = 0
-    if student_id not in students:
+def calculate_gpa(student_id):  #Function defined to calculate gpa for the give student id
+    if student_id not in students: # Checks student id exists or not
         print(stu_error)
-    else:
-        for course in student['courses']:
-
-            grade = student['courses'][course]
-
-            if grade is not None:
-                marks += grade
-                count += 1
-            else:
-                print("No valid grades found, can't calculate GPA!")
-    if count == 0:
         return 0
-    return marks / count
 
-
-#\----------------------------------------------------------------------------------------------------------------------------------------------------------/
-
-
-#/---------------------------------------------------------Compartment 8---------------------------------------------------------------------------------------------------------------------------\
-
-def transcript(student_id):
-    if student_id not in students:
-        print(stu_error)
-    else:
-        print(students[student_id]["courses"])
-        print("GPA: ", calculate_gpa(student_id))
-
-
-# \---------------------------------------------------------------------------------------------------------------------------------------------------/
-
-
-#/---------------------------------------------------------Compartment 9---------------------------------------------------------------------------------------------------------------------------\
-
-def check_honors_eligibility(student_id):
     student = students[student_id]
-    for course in student['courses']:
+    marks = 0 # Variable
+    count = 0 # Variable
 
+    for course in student['courses']:
         grade = student['courses'][course]
 
-        if grade < 90:
-            print("Not eligible")
+        if grade is not None:
+            marks += grade # Adds grade if it exists for a course into marks so at the end all the total of marks is stored in marks
+            count += 1 # Increase count by 1 everytime it finds a valid grade so it can find out the gpa properly using the formula marks/number of courses
+
+    if count == 0: # To prevent zero error
+        return None
+
+    return marks / count
+
+def transcript(student_id): # Function defined to generate the transcript of the given student id
+    if student_id not in students:
+        print(stu_error)
+        return
+
+    print("\nTranscript for:", students[student_id]["name"])
+
+    for course, grade in students[student_id]["courses"].items():  #Acesses course and grade for the given student in the dictionary
+        if grade is None:
+            print(course, "- Not graded")
+        else:
+            print(course, "-", grade)
+
+    gpa = calculate_gpa(student_id)
+    if gpa is not None:  #Checks whether GPA exists or not
+        print("GPA:", gpa)
+
+def check_honors_eligibility(student_id):
+    if student_id not in students:  #Checks if student id exists
+        print(stu_error)
+        return
+
+    if not students[student_id]["courses"]:   #Checks whether the given student id is enrolled in any courses or not, if yes then it moves on, if not then it gives error
+        print("Not eligible for Honors")
+        return
+    student = students[student_id]  # variable for student id
+
+    for course in student['courses']: #Acceses the courses enrolled of the given student id
+
+        grade = student['courses'][course] #Checks the grade of the course and stores the value
+
+        if grade is None or grade < 90:   # checks whether the value is above 90 or below
+            print("Not eligible for Honors")
             break
     else:
         print("Eligible for Honors")
 
+def view_students():  #Function for viewing all the enrolled students
+    if students == {}:  # Case check to check whether there are any students enrolled or not, if not it gives back error
+        print("No students available.")
+        return
 
- # Error: SHould be inside the else block
+    for student_id in students: #acceses student id in the dictionary
+        print("Student ID:", student_id)
+        print("Name:", students[student_id]["name"])
 
-# \----------------------------------------------------------------------------------------------------------------------------------------/
+        if students[student_id]["courses"] == {}:
+            print("Courses: None")
+        else:
+            print("Courses:")
+            for course in students[student_id]["courses"]:
+                grade = students[student_id]["courses"][course]
+                if grade is None:
+                    print(course, "- Not graded")
+                else:
+                    print(course, "-", grade)
 
+        print()
 
-# /-------------------------------Compartment 10-------------------------------------------\
 def menu():      #Menu for the management system to choose what task we have to do
     while True:
         print("\n--- Student Course Management System ---")
@@ -172,123 +183,85 @@ def menu():      #Menu for the management system to choose what task we have to 
         print("9. View all students")
         print("10. Exit")
 
-        Choice = input("Enter your choice: ")
+        choice = input("Enter your choice: ")
 
-# \------------------------------------------------------------------------------------------/
+#\-------------------------------------------End of compartment 2---------------------------------------/
 
+#/---------------------------------------------Compartment 3----------------------------------------------\
 
-# /--------------------------------------Compartment 11------------------------------------------------------------------------------------\
-
-        if Choice == "1":
+        if choice == "1":
             print("Enter the Student ID and Name of the student you want to add:")
-            student_id = std_id()                #Line 42 and 43 takes input form the user for the new student id and name
-            name = input("Student Name: ")
+            student_id = std_id()
+            name = input("Student Name: ") #takes input for name
 
             add_student(student_id, name)               #Calls the function
 
-# \----------------------------------------------------------------------------------------------------------------------------------------/
-
-
-# /-----------------------------------------------Compartment 12------------------------------------------------------------------\
-        elif Choice == "2":
+        elif choice == "2":
             print("Input the student id whom you want to enroll to the course")
             student_id = std_id()
-            print(courses)
-            Course = cou_id()
+            view_courses()
+            course = cou_id()
 
-            enroll_course(student_id,Course)
-
-
-# \-------------------------------------------------------------------------------------------------------------------------------/
+            enroll_course(student_id,course)
 
 
-# /-----------------------------------------Compartment 13-------------------------------------------------------------------------\
-        elif Choice == "3":
+        elif choice == "3":
             print("Input the student id whom you want to drop from the course")
             student_id = std_id()
             print("Enter the course id")
             course = cou_id()
             drop_course(student_id, course)  #Calling the function
 
- # \-------------------------------------------------------------------------------------------------------------------------------/
+        elif choice == "4":
+            view_courses()
 
-# /--------------------------------------------Compartment 14--------------------------------------------------------------------------\
-
-        elif Choice == "4":
-            all_courses()
-
-
-# \-------------------------------------------------------------------------------------------------------------------------------/
-
-
-# /--------------------------------------------Compartment 15--------------------------------------------------------------------------\
-
-        elif Choice == "5":
+        elif choice == "5":
             student_id = std_id()
             course = cou_id()
-            grade = int(input("Grade: "))                #Error, doesnt find out if the subject already exists and if it doesnt it jut adds it to the dictionary by it self, this shouldnt happen
-            record_grade(student_id, course, grade)
+            grade_input = input("Enter your grade: ") #Takes input from the user for grade
+            if grade_input.isdigit(): #Case check to check if the input it a valid number or not
+                grade = int(grade_input)
+                record_grade(student_id, course, grade)
+            else:
+                print("Please enter a number for the grade.")
 
-
-
-# \-------------------------------------------------------------------------------------------------------------------------------/
-
-# /--------------------------------------------Compartment 16--------------------------------------------------------------------------\
-
-        elif Choice == "6":
+        elif choice == "6":
              student_id= std_id()
              gpa = calculate_gpa(student_id)
-             print(gpa)
-# /--------------------------------------------Compartment 17--------------------------------------------------------------------------\
+             if gpa is None:  # Case check to check if the gpa is non zero
+                 print("Cannot calculate GPA: no grades recorded.")
+             else:
+                 print("The GPA is:", gpa)
 
-        elif Choice == "7":
-            student_id = input("Student ID: ")
+        elif choice == "7":
+            student_id = std_id()
             transcript(student_id)
 
-# \-------------------------------------------------------------------------------------------------------------------------------/
 
-# /--------------------------------------------Compartment 18--------------------------------------------------------------------------\
-
-        elif Choice == "8":
+        elif choice == "8":
             student_id = std_id()
             check_honors_eligibility(student_id)
 
-# \-------------------------------------------------------------------------------------------------------------------------------/
 
-# /--------------------------------------------Compartment 19--------------------------------------------------------------------------\
+        elif choice == "9":
+            view_students()
 
-        elif Choice == "9":
-            print(students)
 
-# \-------------------------------------------------------------------------------------------------------------------------------/
-
-# /--------------------------------------------Compartment 20--------------------------------------------------------------------------\
-
-        elif Choice == "10":
+        elif choice == "10":
             print("Exiting system. Goodbye!")
             break
-# \-------------------------------------------------------------------------------------------------------------------------------/
-
-# /--------------------------------------------Compartment 21--------------------------------------------------------------------------\
 
         else:
             print("Invalid choice. Please try again.")
 
-# \-------------------------------------------------------------------------------------------------------------------------------/
+# Test cases-
+print(add_student("S001", "Alice"))
+print(add_student("S002", "Bob"))
+print(enroll_course("S001", "C101"))
+print(record_grade("S001", "C101", 90))
+print(transcript("S001"))
 
-
-# /--------------------------------------------Compartment 21--------------------------------------------------------------------------\
-
-
-add_student("S001", "Alice")
-add_student("S002", "Bob")
-enroll_course("S001", "C101")
-add_student("a", "a")
-enroll_course("a", "C101")
-enroll_course("a", "C102")
-record_grade("a", "C101", 90)
-record_grade("a", "C102", 90)
 menu()
-# \-------------------------------------------------------------------------------------------------------------------------------/
-#Make function  outside  the if else loop then call the function in the loop and not define it
-#Course enrolling twice doesnt show but should give error
+#\-------------------------------------------End of Compartment 3--------------------------------/
+
+
